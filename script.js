@@ -1,231 +1,165 @@
 var matrix = [
-  [],
-  [],
-  []
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8]
 ];
+var size = 3;
+var moveNo = 0;
+var user;
 
-var realData = [];
-$(document).ready(function(){
+// Function is called whenever user clicks on a Box/rectangle
+function selectBox(data, index) {
+  var i = Math.trunc(data/3);
+  var j = index;
+  moveNo++;
+  user = moveNo % 2 ? "A" : "B";
+  matrix[i][j] = user;
 
-var data = [1, 2, 3, 4, 5, 6];
+  if (user === "A") {
+    drawX(j*100, i*100);
+  } else {
+    drawO(j*100, i*100);
+  }
 
-    realData = [{
-      data: 1,
-      state: 1
-    }, {
-      data: 2,
-      state: 1
-    }, {
-      data: 3,
-      state: 1
-    }, {
-      data: 4,
-      state: 1
-    }, {
-      data: 5,
-      state: 1
-    }, {
-      data: 6,
-      state: 1
-    }, {
-      data: 7,
-      state: 1
-    }, {
-      data: 8,
-      state: 1
-    }, {
-      data: 9,
-      state: 1
-    }];
+  if (moveNo < 5) {
+    return;
+  } else {
+    let result = checkGame(i,j);
+    if (result) {
+      let str = "User " + user + " Won!";
+      d3.select("#result").text(str);
+    }
+  }
+}
 
+// Function is called to check if the Game is finished
+// after each user takes turns
+function checkGame(i,j) {
+  let result = checkHorizontal(i);
+  if (result) { return result; }
 
- var count = 0;
- 
- for (var i=0; i<3; i++) {
-   for (var j=0; j<3; j++) {
-      matrix[i][j] = null;
-      realData[count].index = [i, j];
-      count++;
-   }
-} 
+  result = checkVertical(j);
+  if (result) { return result; }
 
+  result = checkDiagonal();
+  return result;
+}
 
-    d3.select('body')
-      .style('background-color', '#333333');
+function checkHorizontal(i) {
+  if (matrix[i][0] === matrix[i][1]
+    && matrix[i][0] === matrix[i][2]
+  ) {
+    return true;
+  }
+}
 
-    var canvas = d3.select('body')
-      .append('svg')
-      .attr('width', 900)
-      .attr('height', 500); 
+function checkVertical(j) {
+  if (matrix[0][j] === matrix[1][j]
+    && matrix[0][j] === matrix[2][j]
+  ) {
+    return true;
+  }
+}
 
-    var squares = canvas.selectAll('rect')
-      .data(realData)
-      .enter()
-      .append('rect')
-      .attr('width', 150)
-      .attr('height', 150)
-      .attr('fill', 'white')
-      .attr('rx', '5')
-      .attr('ry', '5')
-      .attr('class', function(d) {
-        return d.index[0]+ " = "+d.index[1];
-      })
-      .attr('id', function(d, i){
-        return 'rect' + i;
-      })
-      .style('stroke', '#006600')
-      .attr('x', function(d, i) {
-        return ((d.data - 1) % 3) * 160;
-      })
-      .attr('y', function(d, i) {
-        return Math.trunc(i / 3) * 160;
-      })
-      .on('click', function(d, i) {
-        selectBox(d,i, this);
-      });
+function checkDiagonal() {
+  if (matrix[0][0] === matrix[1][1]
+    && matrix[0][0] === matrix[2][2]
+    ||
+    matrix[0][2] === matrix[1][1]
+    && matrix[2][0] === matrix[1][1]
+  ) {
+    return true;
+  }
+}
 
-    d3.select('svg')
-    .append("text")         // append text
-    .style("fill", "white")   // fill the text with the colour black
-    .attr("x", 540) 
-    .attr('y', 100)          // set x position of left side of text
+function drawX(x, y) {
+  d3.select("svg")
+    .append("line") // attach a line
+    .style("stroke", "green") // colour the line
+    .style("stroke-width", 10)
+    .attr("x1", x + 11)
+    .attr("y1", y + 11) 
+    .attr("x2", x + 80) 
+    .attr("y2", y + 80);
+
+  d3.select("svg")
+    .append("line") // attach a line
+    .style("stroke", "green") // colour the line
+    .style("stroke-width", 10)
+    .attr("x1", x + 80)
+    .attr("y1", y + 11)
+    .attr("x2", x + 11)
+    .attr("y2", y + 80);
+}
+
+function drawO(x, y) {
+  d3.select("svg")
+    .append("circle") // attach a line
+    .style("fill", "pink")
+    .attr("cx", x + 50)
+    .attr("cy", y + 50)
+    .attr("r", 35);
+
+  d3.select("svg")
+    .append("circle") // attach a line
+    .style("fill", "white")
+    .attr("cx", x + 50)
+    .attr("cy", y + 50)
+    .attr("r", 25);
+}
+
+// Execution begins from here.
+function ready() {
+  d3.select("body")
+    .style("background-color", "#333333");
+
+  var canvas = d3.select("svg");
+
+  var row = canvas.selectAll("g")
+    .data(matrix)
+    .enter()
+    .append("g");
+
+  row.selectAll("rect")
+    .data(function(d) {
+      return d;
+    })
+    .enter()
+    .append("rect")
+    .attr("width", 100)
+    .attr("height", 100)
+    .attr("rx", 10)
+    .style("fill", "white")
+    .style("stroke", "grey")
+    .attr("transform", function(d, innerArrIndex) {
+      let outerArrIndex = Math.trunc(d/3);
+      return "translate(" + innerArrIndex*100 + "," + outerArrIndex*100 + ")";
+    })
+    .on("click", function( d, i){
+      selectBox(d, i);
+    });
+
+  d3.select("svg")
+    .append("text") // append text
+    .style("fill", "white") // fill the text with the colour black
+    .attr("x", 540)
+    .attr("y", 100) // set x position of left side of text
     .attr("transform", "rotate(10)")
     .text("Tic");
- 
-    d3.select('svg')
-    .append("text")         // append text
-    .style("fill", "white")   // fill the text with the colour black
-    .attr("x", 850)           // set x position of left side of text
-    .attr("y", 200)           // set y position of bottom of text
-    .attr("transform", "rotate(10)")
+
+  d3.select("svg")
+    .append("text") // append text
+    .style("fill", "white") // fill the text with the colour black
+    .attr("x", 650) // set x position of left side of text
+    .attr("y", 130) // set y position of bottom of text
+    .attr("transform", "rotate(16)")
     .text("Tac");
- 
-    d3.select('svg')
-    .append("text")         // append text
-    .style("fill", "white")   // fill the text with the colour black
-    .attr("x", 650)           // set x position of left side of text
-    .attr("y", 300)   
-    .attr("transform", "rotate(-10)")        // set y position of bottom of text
+
+  d3.select("svg")
+    .append("text") // append text
+    .style("fill", "white") // fill the text with the colour black
+    .attr("x", 650) // set x position of left side of text
+    .attr("y", 300)
+    .attr("transform", "rotate(-10)") // set y position of bottom of text
     .text("Toe!");
-});
-
-
-    var user1 = {
-      current: true,
-      selected: []
-    };
-    
-    var user2 = {
-      current: false,
-      selected: []
-    };
-    
-    function selectBox(d, i, rect) {
-      var index = d.index;
-
-      if (!matrix[index[0]][index[1]]) {
-        
-        if (user1.current && !user2.current) {
-          matrix[index[0]][index[1]] = 1;
-          drawHug(index, d, i, rect);
-          user1.selected.push(index);
-          user1.current = false;
-          user2.current = true;
-        } else if (!user1.current && user2.current) {
-          matrix[index[0]][index[1]] = 2;
-          drawKiss(index, d , i, rect);
-          user2.selected.push(index);
-          user1.current = true;
-          user2.current = false;
-        } else {
-          console.log("shouldn't reach here!");
-        }
-      } else {
-        alert("You cannot check a box which is already selected!")
-      }
-
-      var result = gameOver(index);
-
-      if (result) {
-        alert("Congratulations " + result + "! You have won!!");
-      }
-    }
-    
-    function gameOver(index) {
-      var temp = matrix[index[0]][index[1]];
-      if (index[0] === index[1]) {
-        var nextIndex = index[0];
-        if (nextIndex === 0) {
-          nextIndex++;
-          if (matrix[nextIndex][nextIndex] === temp) {
-            nextIndex = nextIndex++;
-            if (matrix[nextIndex][nextIndex] === temp) {
-              if (temp === 1) {
-                return "user1";
-              } else {
-                return "user2";
-              }
-            }
-          }
-        }
-        if (nextIndex === 1) {
-
-        }
-        if (nextIndex === 2) {
-          nextIndex = nextIndex-1;
-          if (matrix[nextIndex][nextIndex] === temp) {
-            nextIndex = nextIndex-1;
-            if (matrix[nextIndex][nextIndex] === temp) {
-              if (temp === 1) {
-                return "user1";
-              } else {
-                return "user2";
-              }
-            }
-          }
-        }
-      }
-    }
-    
-    function drawHug(index, d, i, rect) {
-      var x = rect.x.animVal.value;
-      var y = rect.y.animVal.value;
-
-      d3.select('svg')
-        .append("line")          // attach a line
-        .style("stroke", "green")
-        .style("stroke-width", 10)  // colour the line
-        .attr("x1", x+7)     // x position of the first end of the line
-        .attr("y1", y+7)      // y position of the first end of the line
-        .attr("x2", x+140)     // x position of the second end of the line
-        .attr("y2", y+140); 
-
-      d3.select('svg')
-        .append("line")          // attach a line
-        .style("stroke", "green")
-        .style("stroke-width", 10)  // colour the line
-        .attr("x1", x+140)     // x position of the first end of the line
-        .attr("y1", y+7)      // y position of the first end of the line
-        .attr("x2", x+7)     // x position of the second end of the line
-        .attr("y2", y+140);
-    }
-    
-    function drawKiss(index, d, i, rect) {
-      var x = rect.x.animVal.value;
-      var y = rect.y.animVal.value;
-
-      d3.select('svg')
-        .append("circle")          // attach a line
-        .style("fill", "pink")
-        .attr("cx", x+75)     // x position of the first end of the line
-        .attr("cy", y+75)      // y position of the first end of the line
-        .attr("r", 75);
-
-      d3.select('svg')
-        .append("circle")          // attach a line
-        .style("fill", "white")
-        .attr("cx", x+75)     // x position of the first end of the line
-        .attr("cy", y+75)      // y position of the first end of the line
-        .attr("r", 60);
-    }
-    
+};

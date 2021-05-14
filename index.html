@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-  <title>Tic Tac Toe :) </title>
-  <script data-require="d3@*" data-semver="3.5.3" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js">
-  </script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-  <style>
-    text {
-      font-weight: bold;
-      font-size: 40px;
-    }
-  </style>
-</head>
+  <head>
+    <script data-require="d3@*" data-semver="3.5.3" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.js"></script>
+    <style>
+      text {
+        font-weight: bold;
+        font-size: 40px;
+      }
+    </style>
+  </head>
 
-<body>
-  <script src="./script.js"></script>
-</body>
+  <body onload="ready()">
+    <svg width="900" height="500">
+      <text x="500" y="65" fill="red" id="result"></text>
+    </svg>
+    <script src="./lib/script.js"></script>
+  </body>
 </html>
